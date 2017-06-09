@@ -11,6 +11,7 @@
 
 namespace Symfony\Bundle\AsseticBundle\DependencyInjection;
 
+use Symfony\Bundle\AsseticBundle\Factory\Resource\Normalizer\FormulaNormalizer;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -160,7 +161,23 @@ class Configuration implements ConfigurationInterface
                         ->fixXmlConfig('filter')
                         ->children()
                             ->arrayNode('inputs')
-                                ->prototype('scalar')->end()
+                                ->beforeNormalization()
+                                ->always()
+                                    ->then(function ($v) {
+
+                                        foreach ( $v as $key=>$value){
+                                            if( is_string($value) ){
+                                                $v[$key] = array( FormulaNormalizer::KEY_INPUT => $value, FormulaNormalizer::KEY_POSITION=> PHP_INT_MAX );
+                                            }
+
+                                            if( empty($v[$key][FormulaNormalizer::KEY_POSITION]) ){
+                                                $v[$key][FormulaNormalizer::KEY_POSITION] = PHP_INT_MAX;
+                                            }
+                                        }
+                                        return $v;
+                                    })
+                                ->end()
+                                ->prototype('variable')->end()
                             ->end()
                             ->arrayNode('filters')
                                 ->prototype('scalar')->end()
