@@ -12,6 +12,7 @@
 namespace Symfony\Bundle\AsseticBundle\Factory\Resource;
 
 use Assetic\Factory\Resource\ResourceInterface;
+use Symfony\Bundle\AsseticBundle\Factory\Resource\Normalizer\FormulaNormalizer;
 
 /**
  * A configured resource.
@@ -22,9 +23,16 @@ class ConfigurationResource implements ResourceInterface
 {
     private $formulae;
 
-    public function __construct(array $formulae)
+    /**
+     * @var FormulaNormalizer
+     */
+    private $normalizer;
+
+
+    public function __construct(array $formulae, FormulaNormalizer $normalizer = null)
     {
         $this->formulae = $formulae;
+        $this->normalizer = null === $normalizer ? new FormulaNormalizer() : $normalizer;
     }
 
     public function isFresh($timestamp)
@@ -34,7 +42,7 @@ class ConfigurationResource implements ResourceInterface
 
     public function getContent()
     {
-        return $this->formulae;
+        return $this->normalizer->normalizeList($this->formulae);
     }
 
     public function __toString()
